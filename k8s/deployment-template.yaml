@@ -1,45 +1,34 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: image-catalog-deployment
+  name: book-manager-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: image-catalog
+      app: book-manager 
   template:
     metadata:
       labels:
-        app: image-catalog
+        app: book-manager 
     spec:
       containers:
-        - image: prporso/image-catalog:test #to be changed
-          name: image-catalog
-          env:
-            - name: KUMULUZEE_DATASOURCES0_CONNECTIONURL
-              value: #connection url
-            - name: KUMULUZEE_DATASOURCES0_USERNAME
-              value: #username
-            - name: KUMULUZEE_DATASOURCES0_PASSWORD
-              #value: #password
-              valueFrom: #use Kubernetes secret for storing the password
-                secretKeyRef:
-                  name: #to be added
-                  key: #to be added
+        - image: asusnik12354/book-info-retrieval-service:master
+          name: book-info-retrieval 
           ports:
-            - containerPort: 8080
+            - containerPort: 5000
               name: server
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: image-catalog
+  name: book-manager 
 spec:
   type: LoadBalancer
   ports:
-    - port: 8080
+    - port: 5000
       protocol: TCP
       targetPort: server
   selector:
-    app: image-catalog
+    app: book-manager
