@@ -7,12 +7,15 @@ Simple book managment application, that simplifies managment of read books and r
 
 ## REST endpoints
 
+/ - Hello message
+/v1/info - information of registered books
+
 
 ## Repositories
 
 Github:
     - https://github.com/AndrejSusnik/RSOProject
 
-DockerHub;
+DockerHub:
     - https://hub.docker.com/repository/docker/asusnik12354/book-info-retrieval-service/general
     - https://hub.docker.com/repository/docker/asusnik12354/book-manager-service/general
