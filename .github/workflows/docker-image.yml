@@ -13,4 +13,4 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      run: docker build . --file BookInfoRetrievalService/Dockerfile --tag book-info-retrieval-service:$(date +%s)
+      run: docker build . --file src/BookInfoRetrievalService/Dockerfile --tag book-info-retrieval-service:$(date +%s)
