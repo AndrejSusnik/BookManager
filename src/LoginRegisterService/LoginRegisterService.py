@@ -2,6 +2,7 @@ from flask import Flask
 from flask.views import MethodView
 import marshmallow as ma
 from flask_smorest import Api, Blueprint, abort
+from flask_cors import CORS
 
 from model import UserSchema, UserLoginSchema, UserRegisterSchema, UserQuerySchema, UserDb, CouldNotConnectToDatabase, UserNotFound, UserAlreadyExists, IncorrectUsernameOrPassword
 
@@ -13,6 +14,8 @@ app.config['OPENAPI_URL_PREFIX'] = '/'
 app.config['OPENAPI_SWAGGER_UI_PATH'] = '/swagger-ui'
 app.config["OPENAPI_SWAGGER_UI_URL"] = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
 
+CORS(app)
+
 api = Api(app)
 
 blp = Blueprint("LoginRegisterService", __name__, url_prefix="/LoginRegisterService", description="LoginRegisterService")
@@ -22,13 +25,14 @@ class Login(MethodView):
     @blp.arguments(UserLoginSchema, location="json", as_kwargs=True)
     @blp.response(200, UserSchema)
     @blp.response(404)
+    @blp.response(503, description="Could not connect to database")
     @blp.response(401, description="Unauthorized")
     def post(self, **args):
         """Login"""
         try:
             user = UserDb.login(UserLoginSchema.from_dict(args))
         except CouldNotConnectToDatabase:
-            abort(404, message="Could not connect to database")
+            abort(503, message="Could not connect to database")
         except IncorrectUsernameOrPassword:
             abort(401, message="Incorrect username or password")
         except Exception as e:
