@@ -1,12 +1,10 @@
 FROM python:3.10.0-alpine
 
-RUN mkdir /app
-
 WORKDIR /app
 
-ADD ./LoginRegisterService.py /app
-ADD ./requirements.txt /app
+ADD src/LoginRegisterService/ /app
 
+RUN python3 -m pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 EXPOSE 5002
