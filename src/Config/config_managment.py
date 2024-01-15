@@ -5,7 +5,7 @@ import json
 import os
 
 class CustomConfigManager:
-    def __init__(self, path: str) -> None:
+    def __init__(self, path: str='./') -> None:
         self.path = path
         self.load_configurations()
         self.callbacks: List[Callable[[Any], None]] = []
@@ -16,7 +16,7 @@ class CustomConfigManager:
         # load environment variables from .env file
         self.dotenv_variables = dotenv.dotenv_values()
 
-        self.env_variables = os.environb
+        self.env_variables = os.environ
 
         # load config.yml file
         with open(self.path + 'config.yaml') as f:

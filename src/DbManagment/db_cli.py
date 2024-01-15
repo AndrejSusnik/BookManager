@@ -7,7 +7,7 @@ def seed_users(cur):
     print("Seeding users: ", end='')
     try:
         for i in range(20):
-            cur.execute(f"INSERT INTO users (name, password) VALUES ('user{i}', '{bcrypt.hashpw(('password' + str(i)).encode('utf-8'), bcrypt.gensalt( 12 )).decode()}');")
+            cur.execute(f"INSERT INTO users (name, password, email) VALUES ('user{i}', '{bcrypt.hashpw(('password' + str(i)).encode('utf-8'), bcrypt.gensalt( 12 )).decode()}', '{i}@gmail.com');")
             print('.', end='')
         print(' successful')
     except psycopg2.errors.UniqueViolation:
@@ -30,7 +30,7 @@ def seed_read_books(cur):
 def create_tables(cur):
     print("Creating tables: ", end='')
     try:
-        cur.execute("CREATE TABLE users (id serial PRIMARY KEY, name varchar NOT NULL UNIQUE, password varchar NOT NULL);")
+        cur.execute("CREATE TABLE users (id serial PRIMARY KEY, name varchar NOT NULL UNIQUE, password varchar NOT NULL, email varchar);")
         cur.execute("CREATE TABLE read_books (id serial PRIMARY KEY, user_id integer NOT NULL, title varchar NOT NULL, review varchar NOT NULL, rating integer NOT NULL, FOREIGN KEY (user_id) REFERENCES users (id));")
         print(' successful')
     except psycopg2.errors.DuplicateTable:
