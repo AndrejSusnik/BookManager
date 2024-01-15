@@ -83,7 +83,7 @@
       </Form>
 
       <p class="mt-3 text-center">
-        Don't have an account? <a href="#" on:click={() => console.log('Navigate to register page')}>Register here</a>.
+        Don't have an account? <a on:click={() => console.log('Navigate to register page')}>Register here</a>.
       </p>
     </Col>
   </Row>

@@ -4,7 +4,7 @@ import marshmallow as ma
 from flask_smorest import Api, Blueprint, abort
 from flask_cors import CORS
 
-from model import UserSchema, UserLoginSchema, UserRegisterSchema, UserQuerySchema, UserDb, CouldNotConnectToDatabase, UserNotFound, UserAlreadyExists, IncorrectUsernameOrPassword
+from model import UserSchema, UserLoginSchema, UserRegisterSchema, UserQuerySchema, UserDb, CouldNotConnectToDatabase, UserNotFound, UserAlreadyExists, IncorrectUsernameOrPassword, HealthSchema
 
 app = Flask(__name__)
 app.config['API_TITLE'] = 'LoginRegisterService'
@@ -20,6 +20,78 @@ api = Api(app)
 
 blp = Blueprint("LoginRegisterService", __name__,
                 url_prefix="/LoginRegisterService", description="LoginRegisterService")
+
+blp_health = Blueprint(
+    "Health", __name__, url_prefix="/health", description="Health")
+
+blp_metrics = Blueprint("Metrics", __name__,
+                        url_prefix="/metrics", description="Metrics")
+
+
+@blp_metrics.route("/")
+class Metrics(MethodView):
+    @blp.response(200)
+    def get(self):
+        return ({"application": {
+            "db.writes": UserDb.writes, "db.reads": UserDb.reads, "db.cursors": UserDb.cursors}, "base": {}}, 200, {"Content-Type": "application/json"})
+
+
+@blp_health.route("/live")
+class HealthLive(MethodView):
+    @blp.response(200, HealthSchema)
+    @blp.response(503, HealthSchema)
+    @blp.response(500)
+    def get(self):
+        try:
+            db_check = {
+                "name": "DataSourceHealthCheck",
+                "state": "DOWN" if UserDb.has_error else "UP"
+            }
+
+            etcd_check = {
+                "name": "EtcdHealthCheck",
+                "state": "DOWN" if UserDb.has_etcd_error else "UP"
+            }
+
+            status = "DOWN" if any(
+                [db_check["state"] == "DOWN", etcd_check["state"] == "DOWN"]) else "UP"
+            code = 503 if status == "DOWN" else 200
+
+            return ({
+                "status": status,
+                "checks": [db_check, etcd_check]
+            }, code)
+        except Exception as e:
+            abort(500)
+
+
+@blp_health.route("/ready")
+class HealthReady(MethodView):
+    @blp.response(200, HealthSchema)
+    @blp.response(503, HealthSchema)
+    @blp.response(500)
+    def get(self):
+        try:
+            db_check = {
+                "name": "DataSourceHealthCheck",
+                "state": "DOWN" if UserDb.has_error else "UP"
+            }
+
+            etcd_check = {
+                "name": "EtcdHealthCheck",
+                "state": "DOWN" if UserDb.has_etcd_error else "UP"
+            }
+
+            status = "DOWN" if any(
+                [db_check["state"] == "DOWN", etcd_check["state"] == "DOWN"]) else "UP"
+            code = 503 if status == "DOWN" else 200
+
+            return ({
+                "status": status,
+                "checks": [db_check, etcd_check]
+            }, code)
+        except Exception as e:
+            abort(500)
 
 
 @blp.route("/login")
@@ -110,6 +182,8 @@ class User(MethodView):
 
 
 api.register_blueprint(blp)
+api.register_blueprint(blp_health)
+api.register_blueprint(blp_metrics)
 
 if __name__ == '__main__':
     app.run(port=5002, host="0.0.0.0")

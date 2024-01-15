@@ -21,11 +21,11 @@ blp = Blueprint("BookManagerService", __name__, url_prefix="/BookManagerService"
 
 @blp.route("/book_reviews")
 class BookReviews(MethodView):
-    @blp.arguments(BookReviewQueryByUserSchema, location="json", as_kwargs=True)
+    @blp.arguments(BookReviewQueryByUserSchema, location="query", as_kwargs=True)
     @blp.response(200, BookReviewSchema(many=True))
     @blp.response(404)
     @blp.response(503, description="Could not connect to database")
-    def post(self, **args):
+    def get(self, **args):
         """Get all book reviews"""
         try:
             book_reviews = BookReviewDb.get_book_reviews(BookReviewQueryByUserSchema.from_dict(args))

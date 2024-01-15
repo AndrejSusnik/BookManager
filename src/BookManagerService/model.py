@@ -90,12 +90,12 @@ class _BookReview:
             raise BookReviewNotFound("Book review not found")
         return row
 
-    def delete_book_review(self, book_id: int, user_id: int) -> BookReviewSchema:
+    def delete_book_review(self, args: BookReviewQuerySchema) -> BookReviewSchema:
         if self.has_error:
             raise CouldNotConnectToDatabase("Could not connect to database")
 
         cur = self.connection.cursor()
-        cur.execute("DELETE FROM read_books WHERE id = %s AND user_id = %s RETURNING *;", (book_id, user_id))
+        cur.execute("DELETE FROM read_books WHERE id = %s AND user_id = %s RETURNING *;", (args.id, args.user_id))
         row = cur.fetchone()
         cur.close()
         if row is None:

@@ -29,6 +29,15 @@ class UserUpdateSchema(ma.Schema):
 class UserQuerySchema(ma.Schema):
     id = ma.fields.Integer()
 
+class HealthSchema(ma.Schema):
+    status = ma.fields.String()
+    checks = ma.fields.List(ma.fields.Nested(lambda: SreviceHealthSchema()))
+
+class SreviceHealthSchema(ma.Schema):
+    name = ma.fields.String()
+    status = ma.fields.String()
+    data = ma.fields.Dict(keys=ma.fields.String(), values=ma.fields.String())
+
 class UserNotFound(Exception):
     pass
 
@@ -52,7 +61,12 @@ class _User:
         self.db_connection_attempt_delay = config_manager.get("DB_CONNECTION_ATTEMPT_DELAY", default=1)
 
         self.has_error = False
+        self.has_etcd_error = config_manager.has_etcd_error
         self.connection: Optional[ps.connection] = None
+
+        self.writes = 0
+        self.cursors = 0
+        self.reads = 0
 
         self.try_reconnect()
 
@@ -65,9 +79,12 @@ class _User:
             raise CouldNotConnectToDatabase()
 
         cursor = self.connection.cursor()
+        self.cursors += 1
         cursor.execute("SELECT id, name, email, password FROM users WHERE name = %s", (user.username,))
         result = cursor.fetchone()
         cursor.close()
+        self.cursors -= 1
+        self.reads += 1
 
         if result is None:
             raise UserNotFound()
@@ -83,9 +100,12 @@ class _User:
             raise CouldNotConnectToDatabase()
 
         cursor = self.connection.cursor()
+        self.cursors += 1
         cursor.execute("SELECT id, name, email FROM users")
+        self.reads += 1
         result = cursor.fetchall()
         cursor.close()
+        self.cursors -= 1
         return result
 
     def get_by_id(self, user_id: int) -> UserSchema:
@@ -93,9 +113,12 @@ class _User:
             raise CouldNotConnectToDatabase()
 
         cursor = self.connection.cursor()
+        self.cursors += 1
         cursor.execute("SELECT id, name, email FROM users WHERE id = %s", (user_id,))
+        self.reads += 1
         result = cursor.fetchone()
         cursor.close()
+        self.cursors -= 1
 
         if result is None:
             raise UserNotFound()
@@ -107,22 +130,27 @@ class _User:
             raise CouldNotConnectToDatabase()
 
         cursor = self.connection.cursor()
+        self.cursors += 1
         cursor.execute("SELECT id, name, email FROM users WHERE name = %s", (user.username,))
+        self.reads += 1
         result = cursor.fetchone()
 
         if result is not None:
             raise UserAlreadyExists()
 
         cursor.execute("INSERT INTO users (name, password, email) VALUES (%s, %s, %s) RETURNING id", (user.username, bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt(12)).decode(), user.email))
+        self.writes += 1
         result = cursor.fetchone()
         self.connection.commit()
 
         user_id = result[0]
 
         cursor.execute("SELECT id, name, email FROM users WHERE id = %s", (user_id,))
+        self.reads += 1
         result = cursor.fetchone()
 
         cursor.close()
+        self.cursors -= 1
 
         return result
 
@@ -133,11 +161,13 @@ class _User:
 
         cursor = self.connection.cursor()
         cursor.execute("SELECT id FROM users WHERE id = %s", (user.id,))
+        self.reads += 1
         result = cursor.fetchone()
         if result is None:
             raise UserNotFound()
 
         cursor.execute("UPDATE users SET name = %s, password = %s, email = %s WHERE id = %s", (user.username, bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt(12)).decode(), user.email, user.id))
+        self.writes += 1
         self.connection.commit()
         cursor.close()
 
@@ -150,11 +180,13 @@ class _User:
         cursor = self.connection.cursor()
 
         cursor.execute("SELECT id FROM users WHERE id = %s", (user_id,))
+        self.reads += 1
         result = cursor.fetchone()
         if result is None:
             raise UserNotFound()
 
         cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+        self.writes += 1
         self.connection.commit()
         cursor.close()
 

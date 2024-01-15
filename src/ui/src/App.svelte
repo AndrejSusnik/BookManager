@@ -4,9 +4,11 @@
   import Router from 'svelte-spa-router';
   import LoginRegister from './views/LoginRegister.svelte';
   import Home from './views/Home.svelte';
+  import Settings from './views/Settings.svelte';
 
   const routes = {
     '/': LoginRegister,
+    '/settings': Settings,
     '/home': Home,
   }
 

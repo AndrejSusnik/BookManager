@@ -14,12 +14,14 @@ class EtcdConfig:
 class CustomConfigManager:
     def __init__(self, path: str='./', useEtcd: bool=False, ectd_config: Optional[EtcdConfig]=None) -> None:
         self.path = path
+        self.has_etcd_error = False
         if useEtcd and (ectd_config is None):
             raise Exception("EtcdConfig is required when useEtcd is True")
         else:
             try:
                 self.etcd_client = etcd.Client(host=ectd_config.host, port=ectd_config.port) if useEtcd else None
             except Exception:
+                self.has_etcd_error = True
                 raise Exception("Could not connect to etcd server")
 
         self.useEtcd = useEtcd
@@ -37,8 +39,11 @@ class CustomConfigManager:
         self.env_variables = os.environ
 
         # load config.yml file
-        with open(self.path + 'config.yaml') as f:
-            self.yaml_variables = self.__parse_yaml(yaml.load(f, Loader=yaml.FullLoader))
+        try:
+            with open(self.path + 'config.yaml') as f:
+                self.yaml_variables = self.__parse_yaml(yaml.load(f, Loader=yaml.FullLoader))
+        except FileNotFoundError:
+            self.yaml_variables = {}
 
     def __parse_yaml(self, yaml: dict[str, str]) -> dict[str, str]:
         result: dict[str, str] = {}
@@ -67,7 +72,7 @@ class CustomConfigManager:
         self.callbacks.remove(callback)
 
     def _get_etcd_path(self, key: str, for_service: str="") -> str:
-        return 'nodes/' + ''.join(list(map(lambda x: '/' if x == '_' else x, key.lower())))
+        return ''.join(list(map(lambda x: '/' if x == '_' else x, key.lower())))
 
     def check_etcd(self, key: str, for_service: str="") -> bool:
         try:
