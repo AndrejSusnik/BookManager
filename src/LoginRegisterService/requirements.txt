@@ -5,3 +5,4 @@ bcrypt==4.1.2
 flask-smorest==0.42.3
 marshmallow==3.20.2 
 flask-cors==4.0.0
+python-etcd==0.4.5 

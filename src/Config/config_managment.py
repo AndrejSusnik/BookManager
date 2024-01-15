@@ -2,16 +2,34 @@ from typing import List, Callable, Any
 import dotenv
 import yaml
 import json
+from typing import Optional
 import os
+import etcd
+
+class EtcdConfig:
+    def __init__(self, host='localhost', port=4001) -> None:
+        self.host = host
+        self.port = port
 
 class CustomConfigManager:
-    def __init__(self, path: str='./') -> None:
+    def __init__(self, path: str='./', useEtcd: bool=False, ectd_config: Optional[EtcdConfig]=None) -> None:
         self.path = path
+        if useEtcd and (ectd_config is None):
+            raise Exception("EtcdConfig is required when useEtcd is True")
+        else:
+            try:
+                self.etcd_client = etcd.Client(host=ectd_config.host, port=ectd_config.port) if useEtcd else None
+            except Exception:
+                raise Exception("Could not connect to etcd server")
+
+        self.useEtcd = useEtcd
+            
+            
         self.load_configurations()
         self.callbacks: List[Callable[[Any], None]] = []
 
     def load_configurations(self):
-        # precedence: default > env > dotenv > yaml > config_server
+        # precedence: default < env < dotenv < yaml < config_server
         
         # load environment variables from .env file
         self.dotenv_variables = dotenv.dotenv_values()
@@ -48,7 +66,22 @@ class CustomConfigManager:
     def unregister_callback(self, callback: Callable[[Any], None]):
         self.callbacks.remove(callback)
 
+    def _get_etcd_path(self, key: str, for_service: str="") -> str:
+        return 'nodes/' + ''.join(list(map(lambda x: '/' if x == '_' else x, key.lower())))
+
+    def check_etcd(self, key: str, for_service: str="") -> bool:
+        try:
+            val = self.etcd_client.read(self._get_etcd_path(key, for_service)).value
+            return True, val
+        except etcd.EtcdKeyNotFound:
+            return False, None
+
     def get(self, key: str, for_service: str="", default: str="") -> str:
+        if self.useEtcd:
+            found, val =  self.check_etcd(key, for_service)
+            if found and val is not None:
+                return val
+
         if key in self.yaml_variables:
             return self.yaml_variables[key]
         elif key in self.dotenv_variables:
