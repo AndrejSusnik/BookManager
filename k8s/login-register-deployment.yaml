@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: login-register-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: login-register
+  template:
+    metadata:
+      labels:
+        app: login-register
+    spec:
+      containers:
+        - image: asusnik12354/login-register-service:master
+          name: login-register 
+          ports:
+            - containerPort: 5000
+              name: server
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: login-register
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5000
+      protocol: TCP
+      targetPort: server
+  selector:
+    app: login-register

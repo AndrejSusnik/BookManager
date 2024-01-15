@@ -1,6 +1,11 @@
 from flask import Flask
+from config_managment import CustomConfigManager
+from BookManagerDb import BookManagerDb
 
+config = CustomConfigManager("./")
+db = BookManagerDb(config)
 app = Flask(__name__)
+
 
 @app.route('/')
 def hello():

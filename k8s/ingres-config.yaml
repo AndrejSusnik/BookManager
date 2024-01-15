@@ -1,0 +1,59 @@
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: book-service-ingress
+#   annotations:
+#     nginx.ingress.kubernetes.io/ssl-redirect: "false"
+#     nginx.ingress.kubernetes.io/use-regex: "true"
+#     nginx.ingress.kubernetes.io/rewrite-target: /$2
+# spec:
+#   ingressClassName: nginx
+#   rules:
+#     - http:
+#       paths:
+#       - path: /book-info(/|$)(.*)
+#         pathType: ImplementationSpecific
+#         backend:
+#           service:
+#             name: book-info
+#             port:
+#               number: 5000
+      # - path: /book-manager(/|$)(.*)
+      #   pathType: ImplementationSpecific
+      #   backend:
+      #     service:
+      #       name: book-manager
+      #       port:
+      #         number: 5001
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: proxy-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /book-info(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: book-info
+            port:
+              number: 5000
+      - path: /book-manager(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: book-manager
+            port:
+              number: 5001
+      - path: /login-register(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: login-register
+            port:
+              number: 5002

@@ -5,13 +5,13 @@ import json
 
 app = Flask(__name__)
 
-@app.route('/healthcheck')
-def healthcheck():
+@app.route('/health/live')
+def liveness_check():
     return "OK", 200
 
-@app.route('/')
-def hello():
-    return "Hello from BookInfoRetrievalService!"
+@app.route('/health/ready')
+def readiness_probe():
+    return "OK", 200
 
 @app.route('/v1/info')
 def return_info_for_a_book():

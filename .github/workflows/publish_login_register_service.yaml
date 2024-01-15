@@ -1,4 +1,4 @@
-name: Build and publish book manager service image to Docker Hub
+name: Build and publish login register service to Docker Hub
 
 on:
   push:
@@ -25,12 +25,12 @@ jobs:
       id: meta
       uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
       with:
-        images: asusnik12354/book-manager-service
+        images: asusnik12354/login-register-service
     - name: Build and push Docker image
       uses: docker/build-push-action@v3
       with:
         context: .
-        file: src/BookManagerService/Dockerfile
+        file: src/LoginRegisterService/Dockerfile
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}

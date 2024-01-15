@@ -6,28 +6,28 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: book-manager 
+      app: book-manager
   template:
     metadata:
       labels:
-        app: book-manager 
+        app: book-manager
     spec:
       containers:
-        - image: asusnik12354/book-info-retrieval-service:master
+        - image: asusnik12354/book-manager-service:master
           name: book-info-retrieval 
           ports:
-            - containerPort: 5000
+            - containerPort: 5001
               name: server
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: book-manager 
+  name: book-manager
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   ports:
-    - port: 5000
+    - port: 5001
       protocol: TCP
       targetPort: server
   selector:
