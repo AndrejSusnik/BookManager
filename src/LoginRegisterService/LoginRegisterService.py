@@ -18,7 +18,9 @@ CORS(app)
 
 api = Api(app)
 
-blp = Blueprint("LoginRegisterService", __name__, url_prefix="/LoginRegisterService", description="LoginRegisterService")
+blp = Blueprint("LoginRegisterService", __name__,
+                url_prefix="/LoginRegisterService", description="LoginRegisterService")
+
 
 @blp.route("/login")
 class Login(MethodView):
@@ -38,8 +40,9 @@ class Login(MethodView):
         except Exception as e:
             print(e)
             abort(404, message=str(e))
-        
+
         return (user, 200)
+
 
 @blp.route("/users")
 class Users(MethodView):
@@ -56,6 +59,7 @@ class Users(MethodView):
 
         return (users, 200)
 
+
 @blp.route("/user/<int:user_id>")
 class User(MethodView):
     @blp.response(200, UserSchema)
@@ -71,9 +75,9 @@ class User(MethodView):
             abort(404, message="User not found")
         except Exception as e:
             abort(404, message=str(e))
-        
+
         return (user, 200)
-    
+
     @blp.arguments(UserRegisterSchema, location="json", as_kwargs=True)
     @blp.response(200, UserSchema)
     @blp.response(404)
@@ -87,9 +91,9 @@ class User(MethodView):
             abort(404, message="User already exists")
         except Exception as e:
             abort(404, message=str(e))
-        
+
         return (user, 200)
-            
+
     @blp.arguments(UserQuerySchema)
     @blp.response(200, UserSchema)
     @blp.response(404)
@@ -103,6 +107,7 @@ class User(MethodView):
     def put(self, user_id):
         """Update"""
         return "Not implemented", 501
+
 
 api.register_blueprint(blp)
 

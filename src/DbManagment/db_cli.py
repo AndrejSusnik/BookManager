@@ -2,6 +2,7 @@ import psycopg2
 from config_managment import CustomConfigManager
 import sys
 import bcrypt
+from random import random
 
 def seed_users(cur):
     print("Seeding users: ", end='')
@@ -20,7 +21,7 @@ def seed_read_books(cur):
         for i in range(1, 21):
             print('.', end='')
             for j in range(10):
-                cur.execute(f"INSERT INTO read_books (user_id, title, review, rating) VALUES ({i}, 'book{j}', 'review', {j});")
+                cur.execute(f"INSERT INTO read_books (user_id, title, review, rating, time_spent) VALUES ({i}, 'book{j}', 'review', {j}, {random() * 10});")
         print(' successful')
     except psycopg2.errors.ForeignKeyViolation:
         print(' failed')
@@ -31,7 +32,7 @@ def create_tables(cur):
     print("Creating tables: ", end='')
     try:
         cur.execute("CREATE TABLE users (id serial PRIMARY KEY, name varchar NOT NULL UNIQUE, password varchar NOT NULL, email varchar);")
-        cur.execute("CREATE TABLE read_books (id serial PRIMARY KEY, user_id integer NOT NULL, title varchar NOT NULL, review varchar NOT NULL, rating integer NOT NULL, FOREIGN KEY (user_id) REFERENCES users (id));")
+        cur.execute("CREATE TABLE read_books (id serial PRIMARY KEY, user_id integer NOT NULL, title varchar NOT NULL, review varchar NOT NULL, rating integer NOT NULL, time_spent numeric, FOREIGN KEY (user_id) REFERENCES users (id));")
         print(' successful')
     except psycopg2.errors.DuplicateTable:
         print(' failed')
