@@ -14,15 +14,12 @@ from logstash_async.handler import AsynchronousLogstashHandler
 from logstash_async.handler import LogstashFormatter
 
 tmp = CustomConfigManager()
-conf = EtcdConfig(port=int(tmp.get("ETCD_PORT", default=2379)),
-                  host=tmp.get("ETCD_HOST", default="localhost"))
-config = CustomConfigManager(useEtcd=True, ectd_config=conf)
 logger = logging.getLogger("logstash")
 logger.setLevel(logging.DEBUG)
 
 # Create the handler
 handler = AsynchronousLogstashHandler(
-    host=config.get("LOGIT_HOST", default="localhost"),
+    host=tmp.get("LOGIT_HOST", default="localhost"),
     port=19927,
     ssl_enable=True,
     ssl_verify=False,
@@ -34,6 +31,13 @@ handler.setFormatter(formatter)
 
 # Assign handler to the logger
 logger.addHandler(handler)
+
+logger.debug("Configuring etcd with host: %s and port: %s", tmp.get("ETCD_HOST", default="localhost"),
+
+             tmp.get("ETCD_PORT", default=2379))
+conf = EtcdConfig(port=int(tmp.get("ETCD_PORT", default=2379)),
+                  host=tmp.get("ETCD_HOST", default="localhost"))
+config = CustomConfigManager(useEtcd=True, ectd_config=conf)
 
 app = Flask(__name__)
 app.config['API_TITLE'] = 'LoginRegisterService'
