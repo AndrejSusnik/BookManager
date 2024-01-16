@@ -19,7 +19,7 @@ CORS(app)
 api = Api(app)
 
 blp = Blueprint("LoginRegisterService", __name__,
-                url_prefix="/LoginRegisterService", description="LoginRegisterService")
+                url_prefix="", description="LoginRegisterService")
 
 blp_health = Blueprint(
     "Health", __name__, url_prefix="/health", description="Health")

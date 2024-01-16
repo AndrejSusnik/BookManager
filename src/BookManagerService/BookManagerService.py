@@ -17,7 +17,7 @@ app.config["OPENAPI_SWAGGER_UI_URL"] = "https://cdn.jsdelivr.net/npm/swagger-ui-
 CORS(app)
 api = Api(app)
 
-blp = Blueprint("BookManagerService", __name__, url_prefix="/BookManagerService", description="BookManagerService")
+blp = Blueprint("BookManagerService", __name__, url_prefix="", description="BookManagerService")
 
 @blp.route("/book_reviews")
 class BookReviews(MethodView):
