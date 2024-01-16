@@ -34,6 +34,12 @@ class Metrics(MethodView):
         return ({"application": {
             "db.writes": UserDb.writes, "db.reads": UserDb.reads, "db.cursors": UserDb.cursors}, "base": {}}, 200, {"Content-Type": "application/json"})
 
+@blp_health.route("/disable_db")
+class DisableDb(MethodView):
+    @blp.response(200)
+    def get(self):
+        UserDb.has_error = True
+        return ("", 200)
 
 @blp_health.route("/live")
 class HealthLive(MethodView):

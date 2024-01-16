@@ -14,6 +14,7 @@ spec:
     spec:
       containers:
         - image: asusnik12354/login-register-service:master
+          imagePullPolicy: Always
           name: login-register 
           ports:
             - containerPort: 5002

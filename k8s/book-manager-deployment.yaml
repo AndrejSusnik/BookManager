@@ -14,6 +14,7 @@ spec:
     spec:
       containers:
         - image: asusnik12354/book-manager-service:master
+          imagePullPolicy: Always
           name: book-info-retrieval 
           ports:
             - containerPort: 5001
