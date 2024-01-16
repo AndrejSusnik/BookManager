@@ -32,9 +32,7 @@ handler.setFormatter(formatter)
 # Assign handler to the logger
 logger.addHandler(handler)
 
-logger.debug("Configuring etcd with host: %s and port: %s", tmp.get("ETCD_HOST", default="localhost"),
-
-             tmp.get("ETCD_PORT", default=2379))
+logger.debug("Configuring etcd with host: %s and port: %s", tmp.get("ETCD_HOST", default="localhost"), tmp.get("ETCD_PORT", default=2379))
 conf = EtcdConfig(port=int(tmp.get("ETCD_PORT", default=2379)),
                   host=tmp.get("ETCD_HOST", default="localhost"))
 config = CustomConfigManager(useEtcd=True, ectd_config=conf)

@@ -21,7 +21,7 @@ spec:
               name: server
           livenessProbe:
             httpGet:
-              path: /health/ready
+              path: /health/live
               port: 5002
             initialDelaySeconds: 3
             periodSeconds: 3
