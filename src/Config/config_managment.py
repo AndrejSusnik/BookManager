@@ -22,7 +22,6 @@ class CustomConfigManager:
                 self.etcd_client = etcd.Client(host=ectd_config.host, port=ectd_config.port) if useEtcd else None
                 if self.etcd_client is not None:
                     self.useEtcd = True
-                    print(self.etcd_client.stats())
                     print("Connected to etcd server")
                 else:
                     self.useEtcd = False
@@ -91,6 +90,7 @@ class CustomConfigManager:
             return False, None
 
     def get(self, key: str, for_service: str="", default: str="") -> str:
+        print(self.useEtcd, self.has_etcd_error, self.etcd_client)
         if self.useEtcd and not self.has_etcd_error and self.etcd_client is not None:
             found, val =  self.check_etcd(key, for_service)
             if found and val is not None:
