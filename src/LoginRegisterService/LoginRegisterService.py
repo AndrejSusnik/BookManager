@@ -31,49 +31,61 @@ blp_metrics = Blueprint("Metrics", __name__,
 
 blp_etcd_demo = Blueprint("EtcdDemo", __name__, url_prefix="/etcd_demo")
 
+tmp = CustomConfigManager()
+conf = EtcdConfig(port=int(tmp.get("ETCD_PORT", default=2379)), host=tmp.get("ETCD_HOST", default="localhost"))
+print(conf.host, conf.port)
+
 @blp_etcd_demo.route("/etcd")
 class EtcdDemo(MethodView):
     @blp_etcd_demo.response(200, EtcdDemoSchema)
-    @blp_etcd_demo.arguments(EtcdQuerySchema, location="query", as_kwargs=True)
+    @blp_etcd_demo.arguments(EtcdQuerySchema, location="query")
     def get(self, args):
         try:
-            client = EtcdClient(host="10.0.41.108", port=2379)
+            client = EtcdClient(host=conf.host, port=conf.port)
 
             value = client.get(args["path"]).value
-            
-            return ({"message": value}, 200)
+
+            return {"key": args["path"], "value": value}, 200
         except Exception as e:
             return ({"message": "Error"}, 500)
         
 
     @blp_etcd_demo.response(200, EtcdDemoSchema)
-    @blp_etcd_demo.arguments(EtcdDemoSchema, location="json", as_kwargs=True)
+    @blp_etcd_demo.response(500)
+    @blp_etcd_demo.arguments(EtcdDemoSchema, location="json")
     def post(self, args):
         try:
-            client = EtcdClient(host="10.0.41.108", port=2379)
+            client = EtcdClient(host=conf.host, port=conf.port)
             
             client.set(args["path"], args["value"])
             
-            return ({"message": "Hello from etcd"}, 200)
+            return {"key": args["path"], "value": args["value"]}, 200
         except Exception as e:
-            return ({"message": "Error"}, 500)
+            abort(500, message=str(e))
 
-    @blp_etcd_demo.response(200, EtcdDemoSchema)
-    @blp_etcd_demo.arguments(EtcdQuerySchema, location="query", as_kwargs=True)
+    @blp_etcd_demo.response(200, EtcdQuerySchema)
+    @blp_etcd_demo.arguments(EtcdQuerySchema, location="json")
     def delete(self, args):
-        return ({"message": "Hello from etcd"}, 200)
 
-config = CustomConfigManager(useEtcd=True, ectd_config=EtcdConfig(port=2379, host="10.0.41.108"))
+        try:
+            client = EtcdClient(host=conf.host, port=conf.port)
+            
+            client.delete(args["path"])
+            
+            return {"path": args["path"]}, 200
+        except Exception as e:
+            abort(500, message=str(e))
+
+config = CustomConfigManager(useEtcd=True, ectd_config=conf)
 
 @blp_etcd_demo.route("/config")
 class EtcdConfigg(MethodView):
     @blp_etcd_demo.response(200, ConfigDemoSchema)
-    @blp_etcd_demo.arguments(ConfigQuerySchema, location="query", as_kwargs=True)
-    def get(self):
+    @blp_etcd_demo.arguments(ConfigQuerySchema, location="query")
+    def get(self, args):
         try:
-            value = config.get("key")
-            
-            return ({"message": value}, 200)
+            value = config.get(args["key"])
+            return {"key": args["key"], "value": value}, 200
         except Exception as e:
             return ({"message": "Error"}, 500)
 
@@ -166,7 +178,6 @@ class Login(MethodView):
         except IncorrectUsernameOrPassword:
             abort(401, message="Incorrect username or password")
         except Exception as e:
-            print(e)
             abort(404, message=str(e))
 
         return (user, 200)

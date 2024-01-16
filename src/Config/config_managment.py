@@ -17,15 +17,20 @@ class CustomConfigManager:
         self.has_etcd_error = False
         if useEtcd and (ectd_config is None):
             raise Exception("EtcdConfig is required when useEtcd is True")
-        else:
+        elif useEtcd and (ectd_config is not None):
             try:
                 self.etcd_client = etcd.Client(host=ectd_config.host, port=ectd_config.port) if useEtcd else None
+                self.useEtcd = True
+                print("Connected to etcd server")
             except Exception:
                 self.has_etcd_error = True
+                self.etcd_client = None
+                self.useEtcd = False
                 raise Exception("Could not connect to etcd server")
+        else:
+            self.etcd_client = None
+            self.useEtcd = False
 
-        self.useEtcd = useEtcd
-            
             
         self.load_configurations()
         self.callbacks: List[Callable[[Any], None]] = []
@@ -82,7 +87,7 @@ class CustomConfigManager:
             return False, None
 
     def get(self, key: str, for_service: str="", default: str="") -> str:
-        if self.useEtcd:
+        if self.useEtcd and not self.has_etcd_error and self.etcd_client is not None:
             found, val =  self.check_etcd(key, for_service)
             if found and val is not None:
                 return val

@@ -31,6 +31,11 @@ spec:
               port: 5002
             initialDelaySeconds: 3
             periodSeconds: 3
+          env:
+            - name: ETCD_HOST
+              value: etcd.ingress-nginx.svc.cluster.local
+            - name: ETCD_PORT
+              value: "2379"
 
 ---
 apiVersion: v1
