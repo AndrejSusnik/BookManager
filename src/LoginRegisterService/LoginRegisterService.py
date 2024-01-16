@@ -66,7 +66,7 @@ class EtcdDemo(MethodView):
 config = CustomConfigManager(useEtcd=True, ectd_config=EtcdConfig(port=2379, host="10.0.41.108"))
 
 @blp_etcd_demo.route("/config")
-class EtcdConfig(MethodView):
+class EtcdConfigg(MethodView):
     @blp_etcd_demo.response(200, ConfigDemoSchema)
     @blp_etcd_demo.arguments(ConfigQuerySchema, location="query", as_kwargs=True)
     def get(self):
@@ -240,6 +240,7 @@ class User(MethodView):
 api.register_blueprint(blp)
 api.register_blueprint(blp_health)
 api.register_blueprint(blp_metrics)
+api.register_blueprint(blp_etcd_demo)
 
 if __name__ == '__main__':
     app.run(port=5002, host="0.0.0.0")
