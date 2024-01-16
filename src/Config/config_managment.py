@@ -20,13 +20,17 @@ class CustomConfigManager:
         elif useEtcd and (ectd_config is not None):
             try:
                 self.etcd_client = etcd.Client(host=ectd_config.host, port=ectd_config.port) if useEtcd else None
-                self.useEtcd = True
-                print("Connected to etcd server")
+                if self.etcd_client is not None:
+                    self.useEtcd = True
+                    print(self.etcd_client.stats())
+                    print("Connected to etcd server")
+                else:
+                    self.useEtcd = False
             except Exception:
                 self.has_etcd_error = True
                 self.etcd_client = None
                 self.useEtcd = False
-                raise Exception("Could not connect to etcd server")
+                # raise Exception("Could not connect to etcd server")
         else:
             self.etcd_client = None
             self.useEtcd = False
