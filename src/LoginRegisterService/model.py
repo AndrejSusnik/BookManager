@@ -6,6 +6,20 @@ import logging
 import time
 import bcrypt
 
+class EtcdDemoSchema(ma.Schema):
+    path = ma.fields.String()
+    value = ma.fields.String()
+
+class EtcdQuerySchema(ma.Schema):
+    path = ma.fields.String()
+
+class ConfigQuerySchema(ma.Schema):
+    key = ma.fields.String()
+
+class ConfigDemoSchema(ma.Schema):
+    key = ma.fields.String()
+    value = ma.fields.String()
+    
 class UserSchema(ma.Schema):
     id = ma.fields.Integer()
     username = ma.fields.String()

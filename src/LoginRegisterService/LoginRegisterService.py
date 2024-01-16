@@ -3,8 +3,11 @@ from flask.views import MethodView
 import marshmallow as ma
 from flask_smorest import Api, Blueprint, abort
 from flask_cors import CORS
+from etcd import Client as EtcdClient
 
-from model import UserSchema, UserLoginSchema, UserRegisterSchema, UserQuerySchema, UserDb, CouldNotConnectToDatabase, UserNotFound, UserAlreadyExists, IncorrectUsernameOrPassword, HealthSchema
+from config_managment import CustomConfigManager, EtcdConfig
+
+from model import EtcdDemoSchema, EtcdQuerySchema, ConfigQuerySchema, ConfigDemoSchema, UserSchema, UserLoginSchema, UserRegisterSchema, UserQuerySchema, UserDb, CouldNotConnectToDatabase, UserNotFound, UserAlreadyExists, IncorrectUsernameOrPassword, HealthSchema
 
 app = Flask(__name__)
 app.config['API_TITLE'] = 'LoginRegisterService'
@@ -25,6 +28,54 @@ blp_health = Blueprint(
 
 blp_metrics = Blueprint("Metrics", __name__,
                         url_prefix="/metrics", description="Metrics")
+
+blp_etcd_demo = Blueprint("EtcdDemo", __name__, url_prefix="/etcd_demo")
+
+@blp_etcd_demo.route("/etcd")
+class EtcdDemo(MethodView):
+    @blp_etcd_demo.response(200, EtcdDemoSchema)
+    @blp_etcd_demo.arguments(EtcdQuerySchema, location="query", as_kwargs=True)
+    def get(self, args):
+        try:
+            client = EtcdClient(host="10.0.41.108", port=2379)
+
+            value = client.get(args["path"]).value
+            
+            return ({"message": value}, 200)
+        except Exception as e:
+            return ({"message": "Error"}, 500)
+        
+
+    @blp_etcd_demo.response(200, EtcdDemoSchema)
+    @blp_etcd_demo.arguments(EtcdDemoSchema, location="json", as_kwargs=True)
+    def post(self, args):
+        try:
+            client = EtcdClient(host="10.0.41.108", port=2379)
+            
+            client.set(args["path"], args["value"])
+            
+            return ({"message": "Hello from etcd"}, 200)
+        except Exception as e:
+            return ({"message": "Error"}, 500)
+
+    @blp_etcd_demo.response(200, EtcdDemoSchema)
+    @blp_etcd_demo.arguments(EtcdQuerySchema, location="query", as_kwargs=True)
+    def delete(self, args):
+        return ({"message": "Hello from etcd"}, 200)
+
+config = CustomConfigManager(useEtcd=True, ectd_config=EtcdConfig(port=2379, host="10.0.41.108"))
+
+@blp_etcd_demo.route("/config")
+class EtcdConfig(MethodView):
+    @blp_etcd_demo.response(200, ConfigDemoSchema)
+    @blp_etcd_demo.arguments(ConfigQuerySchema, location="query", as_kwargs=True)
+    def get(self):
+        try:
+            value = config.get("key")
+            
+            return ({"message": value}, 200)
+        except Exception as e:
+            return ({"message": "Error"}, 500)
 
 
 @blp_metrics.route("/")
