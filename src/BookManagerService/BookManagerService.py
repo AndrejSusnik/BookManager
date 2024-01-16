@@ -34,6 +34,8 @@ class BookReviews(MethodView):
         except Exception as e:
             abort(404, message=str(e))
 
+        print('neki')
+
         return (book_reviews, 200)
 
 @blp.route("/book_review")
@@ -87,7 +89,7 @@ class BookReview(MethodView):
 
         return (book_review, 200)
 
-    @blp.arguments(BookReviewQuerySchema, location="query", as_kwargs=True)
+    @blp.arguments(BookReviewQuerySchema, location="json", as_kwargs=True)
     @blp.response(200, BookReviewSchema)
     @blp.response(404)
     @blp.response(503, description="Could not connect to database")

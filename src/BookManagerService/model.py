@@ -66,7 +66,7 @@ class _BookReview:
         cur.close()
         if row is None:
             raise BookReviewNotFound("Book review not found")
-        return row 
+        return row
 
     def create_book_review(self, book_review: BookReviewSchema) -> BookReviewSchema:
         if self.has_error:
@@ -75,6 +75,7 @@ class _BookReview:
         cur = self.connection.cursor()
         cur.execute("INSERT INTO read_books (user_id, title, review, rating, time_spent) VALUES (%s, %s, %s, %s, %s) RETURNING *;", (book_review.user_id, book_review.title, book_review.review, book_review.rating, book_review.time_spent))
         row = cur.fetchone()
+        self.connection.commit()
         cur.close()
         return row
 
@@ -85,6 +86,7 @@ class _BookReview:
         cur = self.connection.cursor()
         cur.execute("UPDATE read_books SET title = %s, review = %s, rating = %s, time_spent = %s WHERE id = %s AND user_id = %s RETURNING *;", (book_review.title, book_review.review, book_review.rating, book_review.time_spent, book_review.id, book_review.user_id))
         row = cur.fetchone()
+        self.connection.commit()
         cur.close()
         if row is None:
             raise BookReviewNotFound("Book review not found")
