@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openapi-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openapi
+  template:
+    metadata:
+      labels:
+        app: openapi
+    spec:
+      containers:
+        - image: asusnik12354/openapi:master
+          name: openapi
+          ports:
+            - containerPort: 5003
+              name: server
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openapi
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5003
+      protocol: TCP
+      targetPort: server
+  selector:
+    app: openapi

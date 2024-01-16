@@ -32,3 +32,10 @@ spec:
             name: login-register
             port:
               number: 5002
+      - path: /openapi(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: openapi
+            port:
+              number: 5003
