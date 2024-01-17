@@ -1,3 +1,5 @@
 DB:
   URL: ella.db.elephantsql.com
   NAME: fttksqao
+LOGIT:
+  HOST: 0a8e3016-eca0-4961-9c2e-d185fcdf8400-ls.logit.io
