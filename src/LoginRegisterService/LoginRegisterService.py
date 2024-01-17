@@ -152,7 +152,6 @@ class HealthLive(MethodView):
     @blp.response(503, HealthSchema)
     @blp.response(500)
     def get(self):
-        logger.info("Get call to route /live")
         try:
             db_check = {
                 "name": "DataSourceHealthCheck",
@@ -183,7 +182,6 @@ class HealthReady(MethodView):
     @blp.response(503, HealthSchema)
     @blp.response(500)
     def get(self):
-        logger.info("Get call to route /ready")
         try:
             db_check = {
                 "name": "DataSourceHealthCheck",
