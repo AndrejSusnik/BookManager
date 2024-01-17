@@ -84,10 +84,6 @@ class _User:
 
         self.try_reconnect()
 
-    def __del__(self):
-        if self.connection:
-            self.connection.close()
-
     def login(self, user: UserLoginSchema) -> UserSchema:
         if self.has_error:
             raise CouldNotConnectToDatabase()

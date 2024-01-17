@@ -18,7 +18,7 @@
     } else {
       // fetch book reviews for user from API
       let response = await fetch(
-        `${api2_url}/BookManagerService/book_reviews?user_id=${$loged_user[0]}`
+        `${api2_url}/book_reviews?user_id=${$loged_user[0]}`
       )
         .then((res) => res.json())
         .then((data) => {

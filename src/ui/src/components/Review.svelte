@@ -29,7 +29,7 @@
   };
 
   let delete_review = (review) => {
-    fetch(`${api2_url}/BookManagerService/book_review`, {
+    fetch(`${api2_url}/book_review`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

@@ -27,14 +27,14 @@
     event.preventDefault();
 
     // Send login request to API
-    const response = await fetch(`${api_url}/LoginRegisterService/login`, {
+    const response = await fetch(`${api_url}/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        username,
-        password
+        "username": username,
+        "password": password
       })
     }).then(async res => {
         if (res.status === 200) {
