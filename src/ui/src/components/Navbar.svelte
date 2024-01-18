@@ -23,6 +23,10 @@
       console.log("home");
         window.location.href = "#/home";
     };
+
+    const stats = () => {
+        window.location.href = "#/stats";
+    };
 </script>
 
 <main>
@@ -31,6 +35,9 @@
   <Nav navbar>
     <NavItem>
       <NavLink on:click={home}>Home</NavLink>
+    </NavItem>
+    <NavItem>
+      <NavLink on:click={stats}>Statistics</NavLink>
     </NavItem>
   </Nav>
 

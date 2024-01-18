@@ -88,7 +88,16 @@ class _User:
         if self.has_error:
             raise CouldNotConnectToDatabase()
 
-        cursor = self.connection.cursor()
+        try:
+            cursor = self.connection.cursor()
+        except ps.OperationalError as e:
+            logging.error("Error while connecting to database: %s", str(e))
+            if not self.try_reconnect():
+                self.has_error = True
+                raise CouldNotConnectToDatabase() from e
+        finally:
+            cursor = self.connection.cursor()
+            
         self.cursors += 1
         cursor.execute("SELECT id, name, email, password FROM users WHERE name = %s", (user.username,))
         result = cursor.fetchone()
@@ -109,7 +118,16 @@ class _User:
         if self.has_error:
             raise CouldNotConnectToDatabase()
 
-        cursor = self.connection.cursor()
+        try:
+            cursor = self.connection.cursor()
+        except ps.OperationalError as e:
+            logging.error("Error while connecting to database: %s", str(e))
+            if not self.try_reconnect():
+                self.has_error = True
+                raise CouldNotConnectToDatabase() from e
+        finally:
+            cursor = self.connection.cursor()
+
         self.cursors += 1
         cursor.execute("SELECT id, name, email FROM users")
         self.reads += 1
@@ -122,7 +140,16 @@ class _User:
         if self.has_error:
             raise CouldNotConnectToDatabase()
 
-        cursor = self.connection.cursor()
+        try:
+            cursor = self.connection.cursor()
+        except ps.OperationalError as e:
+            logging.error("Error while connecting to database: %s", str(e))
+            if not self.try_reconnect():
+                self.has_error = True
+                raise CouldNotConnectToDatabase() from e
+        finally:
+            cursor = self.connection.cursor()
+            
         self.cursors += 1
         cursor.execute("SELECT id, name, email FROM users WHERE id = %s", (user_id,))
         self.reads += 1
@@ -139,7 +166,16 @@ class _User:
         if self.has_error:
             raise CouldNotConnectToDatabase()
 
-        cursor = self.connection.cursor()
+        try:
+            cursor = self.connection.cursor()
+        except ps.OperationalError as e:
+            logging.error("Error while connecting to database: %s", str(e))
+            if not self.try_reconnect():
+                self.has_error = True
+                raise CouldNotConnectToDatabase() from e
+        finally:
+            cursor = self.connection.cursor()
+        
         self.cursors += 1
         cursor.execute("SELECT id, name, email FROM users WHERE name = %s", (user.username,))
         self.reads += 1
@@ -169,7 +205,15 @@ class _User:
         if self.has_error:
             raise CouldNotConnectToDatabase()
 
-        cursor = self.connection.cursor()
+        try:
+            cursor = self.connection.cursor()
+        except ps.OperationalError as e:
+            logging.error("Error while connecting to database: %s", str(e))
+            if not self.try_reconnect():
+                self.has_error = True
+                raise CouldNotConnectToDatabase() from e
+        finally:
+            cursor = self.connection.cursor()
         cursor.execute("SELECT id FROM users WHERE id = %s", (user.id,))
         self.reads += 1
         result = cursor.fetchone()
@@ -187,7 +231,15 @@ class _User:
         if self.has_error:
             raise CouldNotConnectToDatabase()
 
-        cursor = self.connection.cursor()
+        try:
+            cursor = self.connection.cursor()
+        except ps.OperationalError as e:
+            logging.error("Error while connecting to database: %s", str(e))
+            if not self.try_reconnect():
+                self.has_error = True
+                raise CouldNotConnectToDatabase() from e
+        finally:
+            cursor = self.connection.cursor()
 
         cursor.execute("SELECT id FROM users WHERE id = %s", (user_id,))
         self.reads += 1
@@ -215,8 +267,6 @@ class _User:
                     self.has_error = True
                 time.sleep(self.db_connection_attempt_delay)
         return False
-
-
 
 
 UserDb = _User(CustomConfigManager())

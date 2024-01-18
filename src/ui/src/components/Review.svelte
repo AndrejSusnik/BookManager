@@ -2,6 +2,7 @@
   import { api2_url } from "../config/config";
   export let review;
   export let deleted_callback = (review) => {};
+  export let on_title_clicked = (review) => {};
   import { fade } from "svelte/transition";
 
   import {
@@ -62,7 +63,7 @@
       <CardHeader>
         <Row>
           <Col>
-            <CardTitle>{review[2]}</CardTitle>
+            <CardTitle ><a href="none" on:click|preventDefault="{() => {on_title_clicked(review)}}">{review[2]}</a></CardTitle>
           </Col>
           <Col>
             <Button

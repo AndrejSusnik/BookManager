@@ -13,7 +13,6 @@
     Row,
     Col,
   } from "@sveltestrap/sveltestrap";
-  export let closeCallback;
   export let review_added_callback = (review) => {};
   import { api2_url, api3_url } from "../config/config";
   import { loged_user } from "../stores/usersStore";

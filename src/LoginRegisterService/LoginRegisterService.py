@@ -5,6 +5,7 @@ from flask_smorest import Api, Blueprint, abort
 from flask_cors import CORS
 from etcd import Client as EtcdClient
 import logging
+import psycopg2 as ps
 
 from config_managment import CustomConfigManager, EtcdConfig
 
@@ -59,12 +60,12 @@ blp_metrics = Blueprint("Metrics", __name__,
 
 blp_etcd_demo = Blueprint("EtcdDemo", __name__, url_prefix="/etcd_demo")
 
-
 @blp_etcd_demo.route("/etcd")
 class EtcdDemo(MethodView):
     @blp_etcd_demo.response(200, EtcdDemoSchema)
     @blp_etcd_demo.arguments(EtcdQuerySchema, location="query")
     def get(self, args):
+        """Get value from etcd"""
         logger.info("Get call to route /etcd with args: {}".format(args))
         try:
             client = EtcdClient(host=conf.host, port=conf.port)
@@ -82,6 +83,7 @@ class EtcdDemo(MethodView):
     @blp_etcd_demo.response(500)
     @blp_etcd_demo.arguments(EtcdDemoSchema, location="json")
     def post(self, args):
+        """Set value in etcd"""
         logger.info("Post call to route /etcd with args: {}".format(args))
         try:
             client = EtcdClient(host=conf.host, port=conf.port)
@@ -98,6 +100,7 @@ class EtcdDemo(MethodView):
     @blp_etcd_demo.response(200, EtcdQuerySchema)
     @blp_etcd_demo.arguments(EtcdQuerySchema, location="json")
     def delete(self, args):
+        """Delete value from etcd"""
         logger.info("Delete call to route /etcd with args: {}".format(args))
         try:
             client = EtcdClient(host=conf.host, port=conf.port)
@@ -117,6 +120,7 @@ class EtcdConfigg(MethodView):
     @blp_etcd_demo.response(200, ConfigDemoSchema)
     @blp_etcd_demo.arguments(ConfigQuerySchema, location="query")
     def get(self, args):
+        """Get config value"""
         logger.info("Get call to route /config with args: {}".format(args))
         try:
             value = config.get(args["key"])
@@ -132,19 +136,35 @@ class EtcdConfigg(MethodView):
 class Metrics(MethodView):
     @blp.response(200)
     def get(self):
+        """Get metrics"""
         logger.info("Get call to route /metrics")
         return ({"application": {
             "db.writes": UserDb.writes, "db.reads": UserDb.reads, "db.cursors": UserDb.cursors}, "base": {}}, 200, {"Content-Type": "application/json"})
 
+class MockDB:
+    def __init__(self) -> None:
+        pass
+
+    def cursor(self) -> None:
+        raise ps.OperationalError("Mock error")
 
 @blp_health.route("/disable_db")
 class DisableDb(MethodView):
     @blp.response(200)
     def get(self):
+        """Disable the database for demo purposes"""
         logger.info("Get call to route /disable_db")
         UserDb.has_error = True
         return ("", 200)
 
+@blp_health.route("/invalidate_db_connection")
+class InvalidateConnection(MethodView):
+    @blp.response(200)
+    def get(self):
+        """Invalidate the database connection for demo purposes"""
+        logger.info("Get call to route /invalidate_connection")
+        UserDb.connection = MockDB() 
+        return ("", 200)
 
 @blp_health.route("/live")
 class HealthLive(MethodView):
@@ -152,6 +172,7 @@ class HealthLive(MethodView):
     @blp.response(503, HealthSchema)
     @blp.response(500)
     def get(self):
+        """Perform a liveness check"""
         try:
             db_check = {
                 "name": "DataSourceHealthCheck",
@@ -182,6 +203,7 @@ class HealthReady(MethodView):
     @blp.response(503, HealthSchema)
     @blp.response(500)
     def get(self):
+        """Perform a readiness check"""
         try:
             db_check = {
                 "name": "DataSourceHealthCheck",
@@ -228,6 +250,7 @@ class Login(MethodView):
             abort(401, message="Incorrect username or password")
         except Exception as e:
             logger.error("Call to route /login failed with error: %s", str(e))
+            UserDb.try_reconnect()
             abort(404, message=str(e))
 
         return (user, 200)

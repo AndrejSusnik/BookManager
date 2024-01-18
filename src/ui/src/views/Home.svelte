@@ -7,6 +7,7 @@
   import { Container, Row, Col } from "@sveltestrap/sveltestrap";
   import AddReviewCard from "../components/AddReviewCard.svelte";
   import AddReviewModal from "../components/AddReviewModal.svelte";
+  import BookInfoModal from "../components/BookInfoModal.svelte";
 
   let reviews = [];
 
@@ -35,6 +36,17 @@
     show_add_review_modal = true;
   };
 
+  let show_book_info_modal = false;
+  let openBookInfoModal = () => {
+    show_book_info_modal = true;
+  };
+  let reviewInfo = null;
+
+  let on_title_clicked = (review) => {
+    reviewInfo = review;
+    openBookInfoModal();
+  };
+
   let review_added_callback = (review) => {
     reviews = [...reviews, review];
   };
@@ -50,7 +62,7 @@
     {#each reviews as review}
       <Col xs="12" sm="6" md="4" lg="3" xl="3">
         <Container>
-          <Review {review} deleted_callback="{review_deleted_callback}"/>
+          <Review {review} deleted_callback="{review_deleted_callback}" on_title_clicked="{on_title_clicked}"/>
         </Container>
       </Col>
     {/each}
@@ -64,8 +76,14 @@
   {#if show_add_review_modal}
     <AddReviewModal
       bind:modalOpen="{show_add_review_modal}"
-      closeCallback="{() => show_add_review_modal = false}"
       review_added_callback="{review_added_callback}"
     />
   {/if}
+
+  {#if show_book_info_modal}
+    <BookInfoModal
+      bind:modalOpen="{show_book_info_modal}"
+      review="{reviewInfo}"
+    />
+  {/if} 
 </main>

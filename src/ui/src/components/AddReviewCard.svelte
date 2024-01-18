@@ -25,6 +25,6 @@
     <div class="plus-icon" on:click={addClickedCallback}>
       +
     </div>
-    <h5 class="card-title">To add a card click on the +</h5>
+    <h5 class="card-title">To add a review click on the +</h5>
   </CardBody>
 </Card>

@@ -50,7 +50,16 @@ class _BookReview:
         if self.has_error:
             raise CouldNotConnectToDatabase("Could not connect to database")
 
-        cur = self.connection.cursor()
+        try:
+            cur = self.connection.cursor()
+        except ps.OperationalError as e:
+            logging.error("Error while connecting to database: %s", str(e))
+            if not self.try_reconnect():
+                self.has_error = True
+                raise CouldNotConnectToDatabase("Could not connect to database") from e
+        finally:
+            cur = self.connection.cursor()
+            
         cur.execute("SELECT * FROM read_books WHERE user_id = %s;", (args.user_id,))
         rows = cur.fetchall()
         cur.close()
@@ -60,7 +69,16 @@ class _BookReview:
         if self.has_error:
             raise CouldNotConnectToDatabase("Could not connect to database")
 
-        cur = self.connection.cursor()
+        try:
+            cur = self.connection.cursor()
+        except ps.OperationalError as e:
+            logging.error("Error while connecting to database: %s", str(e))
+            if not self.try_reconnect():
+                self.has_error = True
+                raise CouldNotConnectToDatabase("Could not connect to database") from e
+        finally:
+            cur = self.connection.cursor()
+            
         cur.execute("SELECT * FROM read_books WHERE id = %s AND user_id = %s;", (args.id, args.user_id))
         row = cur.fetchone()
         cur.close()
@@ -72,7 +90,16 @@ class _BookReview:
         if self.has_error:
             raise CouldNotConnectToDatabase("Could not connect to database")
 
-        cur = self.connection.cursor()
+        try:
+            cur = self.connection.cursor()
+        except ps.OperationalError as e:
+            logging.error("Error while connecting to database: %s", str(e))
+            if not self.try_reconnect():
+                self.has_error = True
+                raise CouldNotConnectToDatabase("Could not connect to database") from e
+        finally:
+            cur = self.connection.cursor()  
+
         cur.execute("INSERT INTO read_books (user_id, title, review, rating, time_spent) VALUES (%s, %s, %s, %s, %s) RETURNING *;", (book_review.user_id, book_review.title, book_review.review, book_review.rating, book_review.time_spent))
         row = cur.fetchone()
         self.connection.commit()
@@ -83,7 +110,16 @@ class _BookReview:
         if self.has_error:
             raise CouldNotConnectToDatabase("Could not connect to database")
 
-        cur = self.connection.cursor()
+        try:
+            cur = self.connection.cursor()
+        except ps.OperationalError as e:
+            logging.error("Error while connecting to database: %s", str(e))
+            if not self.try_reconnect():
+                self.has_error = True
+                raise CouldNotConnectToDatabase("Could not connect to database") from e
+        finally:
+            cur = self.connection.cursor()
+            
         cur.execute("UPDATE read_books SET title = %s, review = %s, rating = %s, time_spent = %s WHERE id = %s AND user_id = %s RETURNING *;", (book_review.title, book_review.review, book_review.rating, book_review.time_spent, book_review.id, book_review.user_id))
         row = cur.fetchone()
         self.connection.commit()
@@ -96,7 +132,16 @@ class _BookReview:
         if self.has_error:
             raise CouldNotConnectToDatabase("Could not connect to database")
 
-        cur = self.connection.cursor()
+        try:
+            cur = self.connection.cursor()
+        except ps.OperationalError as e:
+            logging.error("Error while connecting to database: %s", str(e))
+            if not self.try_reconnect():
+                self.has_error = True
+                raise CouldNotConnectToDatabase("Could not connect to database") from e
+        finally:
+            cur = self.connection.cursor()
+            
         cur.execute("DELETE FROM read_books WHERE id = %s AND user_id = %s RETURNING *;", (args.id, args.user_id))
         row = cur.fetchone()
         cur.close()
