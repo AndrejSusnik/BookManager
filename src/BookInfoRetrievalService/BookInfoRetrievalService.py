@@ -29,7 +29,7 @@ headers = {
 
 
 @blp.route("/get_name_completion_list")
-class BookInfo(MethodView):
+class BookCompletion(MethodView):
     @blp.arguments(BookCompletionQuery, location="query")
     @blp.response(200, BookCompletionResponse)
     @blp.response(503, description="Could not connect to the api")
