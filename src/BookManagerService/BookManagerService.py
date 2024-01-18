@@ -20,13 +20,13 @@ app.config['OPENAPI_JSON_PATH'] = 'openapi.json'
 CORS(app)
 api = Api(app)
 
-blp = Blueprint("BookManagerService", __name__, url_prefix="", description="BookManagerService")
+blp = Blueprint("BookManagerService", __name__, url_prefix="",
+                description="BookManagerService")
 
 tmp = CustomConfigManager()
 logger = logging.getLogger("logstash")
 logger.setLevel(logging.DEBUG)
 
-# Create the handler
 handler = AsynchronousLogstashHandler(
     host=tmp.get("LOGIT_HOST", default="localhost"),
     port=19927,
@@ -34,12 +34,11 @@ handler = AsynchronousLogstashHandler(
     ssl_verify=False,
     transport='logstash_async.transport.BeatsTransport',
     database_path='')
-# Here you can specify additional formatting on your log record/message
 formatter = LogstashFormatter()
 handler.setFormatter(formatter)
 
-# Assign handler to the logger
 logger.addHandler(handler)
+
 
 @blp.route("/book_reviews")
 class BookReviews(MethodView):
@@ -51,7 +50,8 @@ class BookReviews(MethodView):
         """Get all book reviews"""
         logger.info("Get call to /book_reviews")
         try:
-            book_reviews = BookReviewDb.get_book_reviews(BookReviewQueryByUserSchema.from_dict(args))
+            book_reviews = BookReviewDb.get_book_reviews(
+                BookReviewQueryByUserSchema.from_dict(args))
         except CouldNotConnectToDatabase:
             logger.error("Could not connect to database")
             abort(503, message="Could not connect to database")
@@ -60,6 +60,7 @@ class BookReviews(MethodView):
             abort(404, message=str(e))
 
         return (book_reviews, 200)
+
 
 @blp.route("/book_review")
 class BookReview(MethodView):
@@ -71,7 +72,8 @@ class BookReview(MethodView):
         """Get book review"""
         logger.info("Get call to /book_review")
         try:
-            book_review = BookReviewDb.get_book_review(BookReviewQuerySchema.from_dict(args))
+            book_review = BookReviewDb.get_book_review(
+                BookReviewQuerySchema.from_dict(args))
         except CouldNotConnectToDatabase:
             logger.error("Could not connect to database")
             abort(503, message="Could not connect to database")
@@ -92,7 +94,8 @@ class BookReview(MethodView):
         """Create book review"""
         logger.info("Post call to /book_review")
         try:
-            book_review = BookReviewDb.create_book_review(BookReviewSchema.from_dict(args))
+            book_review = BookReviewDb.create_book_review(
+                BookReviewSchema.from_dict(args))
         except CouldNotConnectToDatabase:
             logger.error("Could not connect to database")
             abort(503, message="Could not connect to database")
@@ -110,7 +113,8 @@ class BookReview(MethodView):
         """Update book review"""
         logger.info("Put call to /book_review")
         try:
-            book_review = BookReviewDb.update_book_review(BookReviewSchema.from_dict(args))
+            book_review = BookReviewDb.update_book_review(
+                BookReviewSchema.from_dict(args))
         except CouldNotConnectToDatabase:
             logger.error("Could not connect to database")
             abort(503, message="Could not connect to database")
@@ -131,7 +135,8 @@ class BookReview(MethodView):
         """Delete book review"""
         logger.info("Delete call to /book_review")
         try:
-            book_review = BookReviewDb.delete_book_review(BookReviewQuerySchema.from_dict(args))
+            book_review = BookReviewDb.delete_book_review(
+                BookReviewQuerySchema.from_dict(args))
         except CouldNotConnectToDatabase:
             logger.error("Could not connect to database")
             abort(503, message="Could not connect to database")

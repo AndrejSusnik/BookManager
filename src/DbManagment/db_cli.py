@@ -4,16 +4,19 @@ import sys
 import bcrypt
 from random import random
 
+
 def seed_users(cur):
     print("Seeding users: ", end='')
     try:
         for i in range(20):
-            cur.execute(f"INSERT INTO users (name, password, email) VALUES ('user{i}', '{bcrypt.hashpw(('password' + str(i)).encode('utf-8'), bcrypt.gensalt( 12 )).decode()}', '{i}@gmail.com');")
+            cur.execute(
+                f"INSERT INTO users (name, password, email) VALUES ('user{i}', '{bcrypt.hashpw(('password' + str(i)).encode('utf-8'), bcrypt.gensalt( 12 )).decode()}', '{i}@gmail.com');")
             print('.', end='')
         print(' successful')
     except psycopg2.errors.UniqueViolation:
         print(' failed')
         print('Reson for failure: UniqueViolation')
+
 
 def seed_read_books(cur):
     print("Seeding read_books: ", end='')
@@ -21,7 +24,8 @@ def seed_read_books(cur):
         for i in range(1, 21):
             print('.', end='')
             for j in range(10):
-                cur.execute(f"INSERT INTO read_books (user_id, title, review, rating, time_spent) VALUES ({i}, 'book{j}', 'review', {j}, {random() * 10});")
+                cur.execute(
+                    f"INSERT INTO read_books (user_id, title, review, rating, time_spent) VALUES ({i}, 'book{j}', 'review', {j}, {random() * 10});")
         print(' successful')
     except psycopg2.errors.ForeignKeyViolation:
         print(' failed')
@@ -31,12 +35,14 @@ def seed_read_books(cur):
 def create_tables(cur):
     print("Creating tables: ", end='')
     try:
-        cur.execute("CREATE TABLE users (id serial PRIMARY KEY, name varchar NOT NULL UNIQUE, password varchar NOT NULL, email varchar);")
+        cur.execute(
+            "CREATE TABLE users (id serial PRIMARY KEY, name varchar NOT NULL UNIQUE, password varchar NOT NULL, email varchar);")
         cur.execute("CREATE TABLE read_books (id serial PRIMARY KEY, user_id integer NOT NULL, title varchar NOT NULL, review varchar NOT NULL, rating integer NOT NULL, time_spent numeric, FOREIGN KEY (user_id) REFERENCES users (id));")
         print(' successful')
     except psycopg2.errors.DuplicateTable:
         print(' failed')
         print('Reson for failure: DuplicateTable')
+
 
 def drop_tables(cur):
     print("Dropping tables: ", end='')
@@ -48,6 +54,7 @@ def drop_tables(cur):
         print(' failed')
         print(f'Reson for failure: {e}')
 
+
 if __name__ == '__main__':
     config = CustomConfigManager("./")
     host = config.get("DB_URL", default="localhost")
@@ -55,7 +62,8 @@ if __name__ == '__main__':
     username = config.get("DB_USER", default="postgres")
     password = config.get("DB_PASSWORD", default="postgres")
 
-    db = psycopg2.connect(host=host, database=db_name, user=username, password=password)
+    db = psycopg2.connect(host=host, database=db_name,
+                          user=username, password=password)
     cursor = db.cursor()
 
     try:
@@ -86,4 +94,3 @@ if __name__ == '__main__':
         db.commit()
         cursor.close()
         db.close()
-    

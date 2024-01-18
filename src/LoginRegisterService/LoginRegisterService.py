@@ -18,7 +18,6 @@ tmp = CustomConfigManager()
 logger = logging.getLogger("logstash")
 logger.setLevel(logging.DEBUG)
 
-# Create the handler
 handler = AsynchronousLogstashHandler(
     host=tmp.get("LOGIT_HOST", default="localhost"),
     port=19927,
@@ -26,14 +25,13 @@ handler = AsynchronousLogstashHandler(
     ssl_verify=False,
     transport='logstash_async.transport.BeatsTransport',
     database_path='')
-# Here you can specify additional formatting on your log record/message
 formatter = LogstashFormatter()
 handler.setFormatter(formatter)
 
-# Assign handler to the logger
 logger.addHandler(handler)
 
-logger.debug("Configuring etcd with host: %s and port: %s", tmp.get("ETCD_HOST", default="localhost"), tmp.get("ETCD_PORT", default=2379))
+logger.debug("Configuring etcd with host: %s and port: %s", tmp.get(
+    "ETCD_HOST", default="localhost"), tmp.get("ETCD_PORT", default=2379))
 conf = EtcdConfig(port=int(tmp.get("ETCD_PORT", default=2379)),
                   host=tmp.get("ETCD_HOST", default="localhost"))
 config = CustomConfigManager(useEtcd=True, ectd_config=conf)
@@ -59,6 +57,7 @@ blp_metrics = Blueprint("Metrics", __name__,
                         url_prefix="/metrics", description="Metrics")
 
 blp_etcd_demo = Blueprint("EtcdDemo", __name__, url_prefix="/etcd_demo")
+
 
 @blp_etcd_demo.route("/etcd")
 class EtcdDemo(MethodView):
@@ -141,12 +140,14 @@ class Metrics(MethodView):
         return ({"application": {
             "db.writes": UserDb.writes, "db.reads": UserDb.reads, "db.cursors": UserDb.cursors}, "base": {}}, 200, {"Content-Type": "application/json"})
 
+
 class MockDB:
     def __init__(self) -> None:
         pass
 
     def cursor(self) -> None:
         raise ps.OperationalError("Mock error")
+
 
 @blp_health.route("/disable_db")
 class DisableDb(MethodView):
@@ -157,14 +158,16 @@ class DisableDb(MethodView):
         UserDb.has_error = True
         return ("", 200)
 
+
 @blp_health.route("/invalidate_db_connection")
 class InvalidateConnection(MethodView):
     @blp.response(200)
     def get(self):
         """Invalidate the database connection for demo purposes"""
         logger.info("Get call to route /invalidate_connection")
-        UserDb.connection = MockDB() 
+        UserDb.connection = MockDB()
         return ("", 200)
+
 
 @blp_health.route("/live")
 class HealthLive(MethodView):
@@ -286,13 +289,16 @@ class User(MethodView):
         try:
             user = UserDb.get_by_id(user_id)
         except CouldNotConnectToDatabase:
-            logger.error("Call to route /user/%s failed with error: Could not connect to database", user_id)
+            logger.error(
+                "Call to route /user/%s failed with error: Could not connect to database", user_id)
             abort(404, message="Could not connect to database")
         except UserNotFound:
-            logger.warning("Call to route /user/%s failed with error: User not found", user_id)
+            logger.warning(
+                "Call to route /user/%s failed with error: User not found", user_id)
             abort(404, message="User not found")
         except Exception as e:
-            logger.error("Call to route /user/%s failed with error: %s", user_id, str(e))
+            logger.error(
+                "Call to route /user/%s failed with error: %s", user_id, str(e))
             abort(404, message=str(e))
 
         return (user, 200)
@@ -306,10 +312,12 @@ class User(MethodView):
         try:
             user = UserDb.add(UserRegisterSchema.from_dict(args))
         except CouldNotConnectToDatabase:
-            logger.error("Call to route /user failed with error: Could not connect to database")
+            logger.error(
+                "Call to route /user failed with error: Could not connect to database")
             abort(404, message="Could not connect to database")
         except UserAlreadyExists:
-            logger.warning("Call to route /user failed with error: User already exists")
+            logger.warning(
+                "Call to route /user failed with error: User already exists")
             abort(404, message="User already exists")
         except Exception as e:
             logger.error("Call to route /user failed with error: %s", str(e))

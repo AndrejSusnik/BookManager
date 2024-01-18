@@ -6,33 +6,41 @@ import logging
 import time
 import bcrypt
 
+
 class EtcdDemoSchema(ma.Schema):
     path = ma.fields.String()
     value = ma.fields.String()
 
+
 class EtcdQuerySchema(ma.Schema):
     path = ma.fields.String()
+
 
 class ConfigQuerySchema(ma.Schema):
     key = ma.fields.String()
 
+
 class ConfigDemoSchema(ma.Schema):
     key = ma.fields.String()
     value = ma.fields.String()
-    
+
+
 class UserSchema(ma.Schema):
     id = ma.fields.Integer()
     username = ma.fields.String()
     email = ma.fields.String()
 
+
 class UserLoginSchema(ma.Schema):
     username = ma.fields.String()
     password = ma.fields.String()
+
 
 class UserRegisterSchema(ma.Schema):
     username = ma.fields.String()
     password = ma.fields.String()
     email = ma.fields.String()
+
 
 class UserUpdateSchema(ma.Schema):
     id = ma.fields.Integer()
@@ -40,29 +48,37 @@ class UserUpdateSchema(ma.Schema):
     password = ma.fields.String()
     email = ma.fields.String()
 
+
 class UserQuerySchema(ma.Schema):
     id = ma.fields.Integer()
+
 
 class HealthSchema(ma.Schema):
     status = ma.fields.String()
     checks = ma.fields.List(ma.fields.Nested(lambda: SreviceHealthSchema()))
+
 
 class SreviceHealthSchema(ma.Schema):
     name = ma.fields.String()
     status = ma.fields.String()
     data = ma.fields.Dict(keys=ma.fields.String(), values=ma.fields.String())
 
+
 class UserNotFound(Exception):
     pass
+
 
 class UserAlreadyExists(Exception):
     pass
 
+
 class IncorrectUsernameOrPassword(Exception):
     pass
 
+
 class CouldNotConnectToDatabase(Exception):
     pass
+
 
 class _User:
     def __init__(self, config_manager: CustomConfigManager):
@@ -71,8 +87,10 @@ class _User:
         self.username = config_manager.get("DB_USER", default="postgres")
         self.password = config_manager.get("DB_PASSWORD", default="postgres")
 
-        self.db_max_connection_attempts = config_manager.get("DB_MAX_CONNECTION_ATTEMPTS", default=5)
-        self.db_connection_attempt_delay = config_manager.get("DB_CONNECTION_ATTEMPT_DELAY", default=1)
+        self.db_max_connection_attempts = config_manager.get(
+            "DB_MAX_CONNECTION_ATTEMPTS", default=5)
+        self.db_connection_attempt_delay = config_manager.get(
+            "DB_CONNECTION_ATTEMPT_DELAY", default=1)
 
         self.has_error = False
         self.has_etcd_error = config_manager.has_etcd_error
@@ -97,9 +115,10 @@ class _User:
                 raise CouldNotConnectToDatabase() from e
         finally:
             cursor = self.connection.cursor()
-            
+
         self.cursors += 1
-        cursor.execute("SELECT id, name, email, password FROM users WHERE name = %s", (user.username,))
+        cursor.execute(
+            "SELECT id, name, email, password FROM users WHERE name = %s", (user.username,))
         result = cursor.fetchone()
         cursor.close()
         self.cursors -= 1
@@ -149,9 +168,10 @@ class _User:
                 raise CouldNotConnectToDatabase() from e
         finally:
             cursor = self.connection.cursor()
-            
+
         self.cursors += 1
-        cursor.execute("SELECT id, name, email FROM users WHERE id = %s", (user_id,))
+        cursor.execute(
+            "SELECT id, name, email FROM users WHERE id = %s", (user_id,))
         self.reads += 1
         result = cursor.fetchone()
         cursor.close()
@@ -175,23 +195,26 @@ class _User:
                 raise CouldNotConnectToDatabase() from e
         finally:
             cursor = self.connection.cursor()
-        
+
         self.cursors += 1
-        cursor.execute("SELECT id, name, email FROM users WHERE name = %s", (user.username,))
+        cursor.execute(
+            "SELECT id, name, email FROM users WHERE name = %s", (user.username,))
         self.reads += 1
         result = cursor.fetchone()
 
         if result is not None:
             raise UserAlreadyExists()
 
-        cursor.execute("INSERT INTO users (name, password, email) VALUES (%s, %s, %s) RETURNING id", (user.username, bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt(12)).decode(), user.email))
+        cursor.execute("INSERT INTO users (name, password, email) VALUES (%s, %s, %s) RETURNING id", (
+            user.username, bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt(12)).decode(), user.email))
         self.writes += 1
         result = cursor.fetchone()
         self.connection.commit()
 
         user_id = result[0]
 
-        cursor.execute("SELECT id, name, email FROM users WHERE id = %s", (user_id,))
+        cursor.execute(
+            "SELECT id, name, email FROM users WHERE id = %s", (user_id,))
         self.reads += 1
         result = cursor.fetchone()
 
@@ -199,7 +222,6 @@ class _User:
         self.cursors -= 1
 
         return result
-
 
     def update(self, user: UserUpdateSchema):
         if self.has_error:
@@ -220,7 +242,8 @@ class _User:
         if result is None:
             raise UserNotFound()
 
-        cursor.execute("UPDATE users SET name = %s, password = %s, email = %s WHERE id = %s", (user.username, bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt(12)).decode(), user.email, user.id))
+        cursor.execute("UPDATE users SET name = %s, password = %s, email = %s WHERE id = %s", (user.username, bcrypt.hashpw(
+            user.password.encode('utf-8'), bcrypt.gensalt(12)).decode(), user.email, user.id))
         self.writes += 1
         self.connection.commit()
         cursor.close()
@@ -256,8 +279,10 @@ class _User:
         max_connection_attempts = self.db_max_connection_attempts
         while max_connection_attempts > 0:
             try:
-                logging.info("Connecting to database %s on %s as %s", self.db_name, self.host, self.username)
-                self.connection = ps.connect(host=self.host, database=self.db_name, user=self.username, password=self.password)
+                logging.info("Connecting to database %s on %s as %s",
+                             self.db_name, self.host, self.username)
+                self.connection = ps.connect(
+                    host=self.host, database=self.db_name, user=self.username, password=self.password)
 
                 return True
             except Exception as e:

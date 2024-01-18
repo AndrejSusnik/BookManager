@@ -17,14 +17,15 @@ app.config['OPENAPI_JSON_PATH'] = 'openapi.json'
 CORS(app)
 
 api = Api(app)
-blp = Blueprint("BookInfoRetrievalService", __name__, url_prefix="", description="BookInfoRetrievalService")
+blp = Blueprint("BookInfoRetrievalService", __name__,
+                url_prefix="", description="BookInfoRetrievalService")
 
 
 api_url_base = "https://hapi-books.p.rapidapi.com/"
 
 headers = {
-	"X-RapidAPI-Key": "318b784573mshd306ec596350becp1958cdjsn699f500710f6",
-	"X-RapidAPI-Host": "hapi-books.p.rapidapi.com"
+    "X-RapidAPI-Key": "318b784573mshd306ec596350becp1958cdjsn699f500710f6",
+    "X-RapidAPI-Host": "hapi-books.p.rapidapi.com"
 }
 
 
@@ -49,6 +50,7 @@ class BookCompletion(MethodView):
                 abort(503, message="Could not connect to the api")
         except Exception as e:
             abort(500, message=str(e))
+
 
 @blp.route("/get_book_info")
 class BookInfo(MethodView):
